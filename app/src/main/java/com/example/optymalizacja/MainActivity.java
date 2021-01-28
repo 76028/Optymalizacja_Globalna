@@ -2,6 +2,7 @@ package com.example.optymalizacja;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.*;
 
 import android.content.Intent;
@@ -10,17 +11,23 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     Button btn_start, btn_wynik;
-    EditText et_osobniki, et_punkty;
+    EditText et_osobniki, et_punkty, et_ilosc_epok;
     TextView tv_wynik;
-    static int ileOsobnikow, ilePunktow;
+    static RadioGroup rg1, rg2, rg3;
+    static int ileOsobnikow, ilePunktow, iloscEpok;
     static Random r = new Random();
+    double min;
     Struktura s;
-
+    static Switch sw1, sw2, sw3;
+    static ArrayList<Osobnik> osobniki;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -29,194 +36,264 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         et_osobniki = findViewById(R.id.et_osobniki);
         et_punkty = findViewById(R.id.et_punkty);
+        et_ilosc_epok = findViewById(R.id.editTextNumber);
         btn_start = findViewById(R.id.btn_start);
         btn_wynik = findViewById(R.id.btn_wynik);
         tv_wynik = findViewById(R.id.tv_wynik);
+        rg1 = findViewById(R.id.rg1);
+        rg2 = findViewById(R.id.rg2);
+        rg3 = findViewById(R.id.rg3);
+        sw1 = findViewById(R.id.switch1);
+        sw2 = findViewById(R.id.switch2);
+        sw3 = findViewById(R.id.switch3);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void onClick(View v) {
-        ileOsobnikow= Integer.parseInt(et_osobniki.getText().toString());
-        ilePunktow= Integer.parseInt(et_punkty.getText().toString());
-        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
-        s=new Struktura(ileOsobnikow,ilePunktow);
-        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
-        String []dl=new String[ileOsobnikow];
-        String []os=new String[ileOsobnikow];
-        String wynik="";
-        int i=0;
-        for(Double d: mapa.keySet()){
-            dl[i]=d.toString();
-            i++;
+        ileOsobnikow = Integer.parseInt(et_osobniki.getText().toString());
+        ilePunktow = Integer.parseInt(et_punkty.getText().toString());
+        s = new Struktura(ileOsobnikow, ilePunktow);
+        osobniki = new ArrayList<Osobnik>();
+        for (int i = 0; i < ileOsobnikow; i++) {
+            osobniki.add(new Osobnik(s.dlugosciTras[i], s.osobniki.get(i)));
         }
-        i=0;
-        for(List<Integer> d: mapa.values()){
-            os[i]=d.toString();
-            i++;
+        String wynik = "";
+        int i = 0;
+        for (Osobnik d : osobniki) {
+            System.out.println(d);
+            wynik += d.toString() + "\n";
         }
-        for(int j=0; j<ileOsobnikow;j++)
-            wynik+=os[j]+"  "+dl[j]+"\n";
+//        Collections.sort(Arrays.asList(osobniki)); // sortowanie
+        min = permutacja(s);
+        wynik = "Minimum: " + min + "\n\n" + wynik;
+
         tv_wynik.setText(wynik);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void onClick2(View v) {
-        sukcesjaElitarna(s);
-        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
-        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
-        String []dl=new String[ileOsobnikow];
-        String []os=new String[ileOsobnikow];
-        String wynik="";
-        int i=0;
-        for(Double d: mapa.keySet()){
-            dl[i]=d.toString();
-            i++;
+        iloscEpok = Integer.parseInt(et_ilosc_epok.getText().toString());
+        switch (rg3.getCheckedRadioButtonId()) {
+            case R.id.radioButton10:
+                sukcesjaTrywialna(s);
+                break;
+            case R.id.radioButton11:
+                sukcesjaElitarna(s);
+                break;
+            case R.id.radioButton12:
+                sukcesjaElitarna(s);
+                break;
+            case R.id.radioButton13:
+                sukcesjaElitarna(s);
+                break;
+            default:
+                sukcesjaElitarna(s);
         }
-        i=0;
-        for(List<Integer> d: mapa.values()){
-            os[i]=d.toString();
-            i++;
-        }
-        for(int j=0; j<ileOsobnikow;j++)
-            wynik+=os[j]+"  "+dl[j]+"\n";
-        tv_wynik.setText(wynik);
 
+        String wynik = "";
+        for (Osobnik o : osobniki) {
+            wynik += o.toString() + "\n";
+        }
+        wynik = "Minimum: " + min + "\n\n" + wynik;
+        tv_wynik.setText(wynik);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     static void sukcesjaElitarna(Struktura s) {
-        int iloscEpok = 10;
-        List<List<Integer>> osobniki = new ArrayList<>();
-        kopiuj_liste(s.osobniki, osobniki);
+
+        List<List<Integer>> wynikowa = new ArrayList<>();
+        kopiuj_liste(s.osobniki, wynikowa);
         List<List<Integer>> poselkcji;
         List<List<Integer>> mutacja;
         List<List<Integer>> inwersja;
         List<List<Integer>> transpozycja;
         List<List<Integer>> krzyzowanie;
         // Wyświetlenie współrzędnych punktów/miast po których będzie poruszał się komiwojażer
-        System.out.println("\n----Punkty (Miasta)----");
+        //System.out.println("\n----Punkty (Miasta)----");
         s.wyswietlPunkty();
         // Wyświetlenie populacji osobników wraz z ich trasami i długościami tras
-        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
-        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
-        System.out.println("\n----Osobnik + długość trasy----");
-        mapa.forEach((key, value) -> System.out.println(value + " " + key));
+//        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
+//        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
+        //System.out.println("\n----Osobnik + długość trasy----");
+//        mapa.forEach((key, value) -> System.out.println(value + " " + key));
         // Iteracja po epokach
         for (int i = 0; i < iloscEpok; i++) {
             System.out.println("\n-----EPOKA " + (i + 1) + "-----");
-            poselkcji = selekcja(mapa, s.dlugosciTras);
-            mapa.clear();
-            System.out.println("----PO SELEKCJI----");
+            poselkcji = selekcja(s.dlugosciTras);
+            osobniki.clear();
+            //System.out.println("----PO SELEKCJI----");
             poselkcji.forEach(System.out::println);
             // Zastosowanie operatorów genetycznych na populacji po selekcji i wyświetlenie tych danych
-            mutacja = mutacja(poselkcji);
-            inwersja = inwersja(poselkcji);
-            transpozycja = transpozycja(poselkcji);
-            //krzyzowanie = krzyzowanieRownomierne(poselkcji);
-            krzyzowanie = krzyzowanieWielopunktowe(poselkcji);
-            System.out.println("----Z MUTACJI----");
-            mutacja.forEach(System.out::println);
-            System.out.println("----Z INWERSJI----");
-            inwersja.forEach(System.out::println);
-            System.out.println("----Z TRANSPOZYCJI----");
-            transpozycja.forEach(System.out::println);
-            System.out.println("----Z KRZYŻOWANIA----");
-            krzyzowanie.forEach(System.out::println);
+            if (sw1.isChecked()) {
+                mutacja = mutacja(poselkcji);
+            } else {
+                mutacja = null;
+            }
+            if (sw2.isChecked()) {
+                inwersja = inwersja(poselkcji);
+            } else {
+                inwersja = null;
+            }
+            if (sw3.isChecked()) {
+                transpozycja = transpozycja(poselkcji);
+            } else {
+                transpozycja = null;
+            }
+
+            switch (rg2.getCheckedRadioButtonId()) {
+                case R.id.radioButton9:
+                    krzyzowanie = krzyzowanieRownomierne(poselkcji);
+                    break;
+                case R.id.radioButton8:
+                    krzyzowanie = krzyzowanieWielopunktowe(poselkcji);
+                    break;
+                default:
+                    krzyzowanie = krzyzowanieRownomierne(poselkcji);
+            }
+
+            //System.out.println("----Z MUTACJI----");
+            // mutacja.forEach(System.out::println);
+            // System.out.println("----Z INWERSJI----");
+            //  inwersja.forEach(System.out::println);
+            // System.out.println("----Z TRANSPOZYCJI----");
+            //transpozycja.forEach(System.out::println);
+            // System.out.println("----Z KRZYŻOWANIA----");
+            // krzyzowanie.forEach(System.out::println);
             // Dodanie do populacji do eliminacji tylko zmienionych w wyniku działania operatorów genetycznych osobników
             for (int j = 0; j < ileOsobnikow; j++) {
-                if (!mutacja.get(j).equals(poselkcji.get(j))) {
-                    osobniki.add(mutacja.get(j));
-                }
-                if (!inwersja.get(j).equals(poselkcji.get(j))) {
-                    osobniki.add(inwersja.get(j));
-                }
-                if (!transpozycja.get(j).equals(poselkcji.get(j))) {
-                    osobniki.add(transpozycja.get(j));
-                }
+                if (mutacja != null)
+                    if (!mutacja.get(j).equals(poselkcji.get(j))) {
+                        wynikowa.add(mutacja.get(j));
+                    }
+                if (inwersja != null)
+                    if (!inwersja.get(j).equals(poselkcji.get(j))) {
+                        wynikowa.add(inwersja.get(j));
+                    }
+                if (transpozycja != null)
+                    if (!transpozycja.get(j).equals(poselkcji.get(j))) {
+                        wynikowa.add(transpozycja.get(j));
+                    }
                 if (!krzyzowanie.get(j).equals(poselkcji.get(j))) {
-                    osobniki.add(krzyzowanie.get(j));
+                    wynikowa.add(krzyzowanie.get(j));
                 }
             }
             // Wyświetlenie wszystkich osobników (populacja przed selekcją oraz osobniki zmienione w wyniku działania operatorów genetycznych) oraz ilość tych osobników
-            System.out.println("----WSZYSTKIE OSOBNIKI (" + osobniki.size() + ")----");
-            s.osobniki = osobniki;
-            s.generujTrasy(osobniki.size());
-            s.dlugosciTras(osobniki.size());
-            osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
+            //  System.out.println("----WSZYSTKIE OSOBNIKI (" + osobniki.size() + ")----");
+            s.osobniki = wynikowa;
+            s.generujTrasy(wynikowa.size());
+            s.dlugosciTras(wynikowa.size());
+            for (int j = 0; j < s.osobniki.size(); j++) {
+                osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
+            }
             // 3 METODY USUWANIA OSOBNIKÓW
-
-            // ELIMINACJA
-//            // Wybranie początkowej liczby osobników z populacji do eliminacji
-//            // posortowanie mapy
-//            TreeMap<Double, List<Integer>> mapa1 = new TreeMap<>(mapa);
-//            mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-//            // wyodrębnienie odpowiedniej liczby osobników poprzez usunięcie niepotrzebnych
-//            while(mapa1.size()!=ileOsobnikow) mapa1.pollLastEntry();
-//            System.out.println("----OSOBNIKI PO USUNIĘCIU----");
-//            mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-//            mapa.clear();
-//            mapa = new LinkedHashMap(mapa1);
-//            mapa1.clear();
-//            osobniki.clear();
-//            mapa.forEach((key, value) -> osobniki.add(value));
-//            s.osobniki = osobniki;
-//            s.generujTrasy();
-//            s.dlugosciTras();
-            // LOSOWE
-//            // Wybranie początkowej liczby osobników z populacji do usnięcia losowaego
-//            mapa.forEach((key, value) -> System.out.println(value + " " + key));
-//            ArrayList<Double> dlugosciTras = new ArrayList<Double>();
-//            for(double d : s.dlugosciTras) dlugosciTras.add(d);
-//            while(mapa.size()!=ileOsobnikow) {
-//                mapa.remove(dlugosciTras.remove(r.nextInt(mapa.size())));
-//            }
-//            System.out.println("----OSOBNIKI PO UNUNIĘCIU----");
-//            mapa.forEach((key, value) -> System.out.println(value + " " + key));
-//            osobniki.clear();
-//            mapa.forEach((key, value) -> osobniki.add(value));
-//            s.osobniki = osobniki;
-//            s.generujTrasy();
-//            s.dlugosciTras();
-            // ZE ŚCISKIEM
-            // Wybranie początkowej liczby osobników do usnięcia ze ściskiem
-            TreeMap<Double, List<Integer>> mapa1 = new TreeMap<>(mapa);
-            mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-            // usunięcie podobnych osobników (o podobnej długości trasy)
-            int ile_podobnych;
-            double roznica = 0.001;
-            ArrayList<Double> dlugosciTras = new ArrayList<Double>();
-            for (double d : s.dlugosciTras) {
-                dlugosciTras.add(d);
-            }
-            while (mapa1.size() != ileOsobnikow) {
-                for (int x = 0; x < mapa1.size() - 1; x++) {
-                    ile_podobnych = 0;
-                    for (int y = x + 1; y < mapa1.size(); y++) {
-                        if (Math.abs(dlugosciTras.get(x) - dlugosciTras.get(y)) < roznica) {
-                            ile_podobnych += 1;
+//            TreeMap<Double, List<Integer>> mapa1;
+            ArrayList<Double> dlugosciTras;
+            switch (rg3.getCheckedRadioButtonId()) {
+                case R.id.radioButton11:
+                    // ELITARNA
+                    // Wybranie początkowej liczby osobników z populacji do eliminacji
+                    // posortowanie mapy
+//                    mapa1 = new TreeMap<>(mapa);
+//                    //mapa1.forEach((key, value) -> System.out.println(value + " " + key));
+//                    // wyodrębnienie odpowiedniej liczby osobników poprzez usunięcie niepotrzebnych
+//                    while (mapa1.size() != ileOsobnikow) mapa1.pollLastEntry();
+//                    //System.out.println("----OSOBNIKI PO USUNIĘCIU----");
+//                    //mapa1.forEach((key, value) -> System.out.println(value + " " + key));
+//                    mapa.clear();
+//                    mapa = new LinkedHashMap(mapa1);
+//                    mapa1.clear();
+//                    wynikowa.clear();
+//                    mapa.forEach((key, value) -> osobniki.add(value));
+                    Collections.sort(osobniki);
+                    while(osobniki.size()!=ileOsobnikow) {
+                        osobniki.remove(osobniki.size()-1);
+                    }
+                    wynikowa.clear();
+                    for (int x = 0; x < ileOsobnikow; x++) {
+                        wynikowa.add((List<Integer>) osobniki.get(x).geny);
+                    }
+                    s.osobniki = wynikowa;
+                    s.generujTrasy();
+                    s.dlugosciTras();
+                    osobniki.clear();
+                    for (int j = 0; j < s.osobniki.size(); j++) {
+                        osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
+                    }
+                    break;
+                case R.id.radioButton12:
+                    // ZE SCISKIEM
+//                    mapa1 = new TreeMap<>(mapa);
+                    // mapa1.forEach((key, value) -> System.out.println(value + " " + key));
+                    // usunięcie podobnych osobników (o podobnej długości trasy)
+                    int ile_podobnych;
+                    double roznica = 0.001;
+                    dlugosciTras = new ArrayList<Double>();
+                    for (double d : s.dlugosciTras) {
+                        dlugosciTras.add(d);
+                    }
+                    while (osobniki.size() != ileOsobnikow) {
+                        for (int x = 0; x < osobniki.size() - 1; x++) {
+                            ile_podobnych = 0;
+                            for (int y = x + 1; y < osobniki.size(); y++) {
+//                                System.out.println("Długość="+osobniki.size()+"x="+x+" y="+y);
+                                if (Math.abs(dlugosciTras.get(x) - dlugosciTras.get(y)) < roznica) {
+                                    ile_podobnych += 1;
+                                }
+                            }
+                            if (ile_podobnych == 1) {
+                                osobniki.remove(x + 1);
+                            }
                         }
+                        roznica += 0.001;
                     }
-                    if (ile_podobnych == 1) {
-                        mapa1.remove(dlugosciTras.remove(x + 1));
+                    //System.out.println("----OSOBNIKI PO USUNIĘCIU----");
+                    // mapa1.forEach((key, value) -> System.out.println(value + " " + key));
+                    wynikowa.clear();
+                    for (int x = 0; x < ileOsobnikow; x++) {
+                        wynikowa.add((List<Integer>) osobniki.get(x).geny);
                     }
-                }
-                roznica += 0.001;
+                    s.osobniki = wynikowa;
+                    s.generujTrasy();
+                    s.dlugosciTras();
+                    osobniki.clear();
+                    for (int j = 0; j < s.osobniki.size(); j++) {
+                        osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
+                    }
+                    break;
+                case R.id.radioButton13:
+                    // LOSOWA
+//                    mapa.forEach((key, value) -> System.out.println(value + " " + key));
+//                    dlugosciTras = new ArrayList<Double>();
+//                    for (double d : s.dlugosciTras) dlugosciTras.add(d);
+                    while (osobniki.size() != ileOsobnikow) {
+                        osobniki.remove(r.nextInt(osobniki.size()));
+                    }
+//                    System.out.println("----OSOBNIKI PO UNUNIĘCIU----");
+//                    mapa.forEach((key, value) -> System.out.println(value + " " + key));
+//                    wynikowa.clear();
+//                    mapa.forEach((key, value) -> osobniki.add(value));
+                    wynikowa.clear();
+                    for (int x = 0; x < ileOsobnikow; x++) {
+                        wynikowa.add((List<Integer>) osobniki.get(x).geny);
+                    }
+                    s.osobniki = wynikowa;
+                    s.generujTrasy();
+                    s.dlugosciTras();
+                    osobniki.clear();
+                    for (int j = 0; j < s.osobniki.size(); j++) {
+                        osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
+                    }
+                    break;
             }
-            System.out.println("----OSOBNIKI PO USUNIĘCIU----");
-            mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-            mapa.clear();
-            mapa = new LinkedHashMap(mapa1);
-            mapa1.clear();
-            osobniki.clear();
-            mapa.forEach((key, value) -> osobniki.add(value));
-            s.osobniki = osobniki;
-            s.generujTrasy();
-            s.dlugosciTras();
             // Czyszczenie zmiennych
+
             poselkcji.clear();
-            mutacja.clear();
-            inwersja.clear();
-            transpozycja.clear();
+            if (mutacja != null)
+                mutacja.clear();
+            if (inwersja != null)
+                inwersja.clear();
+            if (transpozycja != null)
+                transpozycja.clear();
             krzyzowanie.clear();
         }
     }
@@ -224,43 +301,68 @@ public class MainActivity extends AppCompatActivity {
     // Sukcjesja trywialna
     @RequiresApi(api = Build.VERSION_CODES.N)
     static void sukcesjaTrywialna(Struktura s) {
-        int iloscEpok = 10;
         // Wyświetlenie współrzędnych punktów/miast po których będzie poruszał się komiwojażer
         System.out.println("\n----Punkty (Miasta)----");
         s.wyswietlPunkty();
         // Wyświetlenie populacji osobników wraz z ich trasami i długościami tras
-        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
-        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
-        System.out.println("\n----Osobnik + długość trasy----");
-        mapa.forEach((key, value) -> System.out.println(value + " " + key));
+//        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
+//        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
+//        System.out.println("\n----Osobnik + długość trasy----");
+//        mapa.forEach((key, value) -> System.out.println(value + " " + key));
         // Iteracja po epokach
+        // odpal mi emulator  nieee ?
         for (int i = 0; i < iloscEpok; i++) {
             // Zastosowanie selecji i kolejnych operatorów genetycznych na populacji
             System.out.println("\n\n-----EPOKA " + (i + 1) + "-----");
-            System.out.println("----SELEKCJA----");
-            s.osobniki = selekcja(mapa, s.dlugosciTras);
-            s.wyswietlOsobniki();
-            System.out.println("\n----MUTACJA----");
-            s.osobniki = mutacja(s.osobniki);
-            s.wyswietlOsobniki();
-            System.out.println("\n----INWERSJA----");
-            s.osobniki = inwersja(s.osobniki);
-            s.wyswietlOsobniki();
-            System.out.println("\n----TRANSPOZYCJA----");
-            s.osobniki = transpozycja(s.osobniki);
-            s.wyswietlOsobniki();
-            System.out.println("\n----KRZYŻOWANIE----");
-            s.osobniki = krzyzowanieRownomierne(s.osobniki);
+//            System.out.println("----SELEKCJA----");
+            s.osobniki = selekcja(s.dlugosciTras);
+//            s.wyswietlOsobniki();
+//            System.out.println("\n----MUTACJA----");
+
+//            s.wyswietlOsobniki();
+//            System.out.println("\n----INWERSJA----");
+
+//            s.wyswietlOsobniki();
+//            System.out.println("\n----TRANSPOZYCJA----");
+
+            // s.wyswietlOsobniki();
+            //  System.out.println("\n----KRZYŻOWANIE----");
+
+            if (sw1.isChecked()) {
+                s.osobniki = mutacja(s.osobniki);
+            }
+            if (sw2.isChecked()) {
+                s.osobniki = inwersja(s.osobniki);
+            }
+            if (sw3.isChecked()) {
+                s.osobniki = transpozycja(s.osobniki);
+            }
+            switch (rg2.getCheckedRadioButtonId()) {
+                case R.id.radioButton9:
+                    s.osobniki = krzyzowanieRownomierne(s.osobniki);
+                    break;
+                case R.id.radioButton8:
+                    s.osobniki = krzyzowanieWielopunktowe(s.osobniki);
+                    break;
+                default:
+                    s.osobniki = krzyzowanieWielopunktowe(s.osobniki);
+            }
+
+
             // s.osobniki = krzyzowanieWielopunktowe(s.osobniki);
-            s.wyswietlOsobniki();
+            // s.wyswietlOsobniki();
             // ocena
             s.generujTrasy();
             s.dlugosciTras();
-            mapa.clear();
-            osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
+            osobniki.clear();
+            for (int j = 0; j < ileOsobnikow; j++) {
+                osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
+            }
+//            mapa.clear();
+//            osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
         }
-        System.out.println("\n----PO SUKCESJI----");
-        mapa.forEach((key, value) -> System.out.println(value + " " + key));
+//        System.out.println("\n----PO SUKCESJI----");
+//        mapa.forEach((key, value) -> System.out.println(value + " " + key));
     }
 
     // Transpozyjc genów osobnika na podstawie prawdopodobieństwa
@@ -291,6 +393,42 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return ztranspozycjonowane;
+    }
+
+    static double permutacja(Struktura s) {
+        List<Integer> osobnikpermutacja = new ArrayList<>();
+        int[] licznik = new int[ilePunktow];
+        int[] wartosc = new int[ilePunktow];
+        double MIN = Integer.MAX_VALUE;
+        double temp;
+        Arrays.fill(licznik, 0);
+        Arrays.fill(wartosc, 0);
+        int silnia = silnia(ilePunktow);
+        for (int i = 0; i < silnia; i++) {
+            for (int j = 0; j < ilePunktow; j++) {
+                //System.out.println("Licznik["+j+"] wartość="+wartosc[j]);
+                osobnikpermutacja.add(wartosc[j]);
+                licznik[j]++;
+                if (licznik[j] >= j) {
+                    licznik[j] = 0;
+                    wartosc[j]++;
+                    if (wartosc[j] > j) wartosc[j] = 0;
+                }
+            }
+            Collections.reverse(osobnikpermutacja);
+            System.out.println(osobnikpermutacja);
+            temp = s.dlugoscTrasy(s.generujTrase(osobnikpermutacja));
+            if (MIN > temp) MIN = temp;
+            osobnikpermutacja.clear();
+        }
+        return MIN;
+    }
+
+    static int silnia(int i) {
+        if (i == 0)
+            return 1;
+        else
+            return i * silnia(i - 1);
     }
 
     // Inwersja genów w osobniku na podstawie prawdopodobieństwa
@@ -355,39 +493,65 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Mutacja
-    static List<List<Integer>> mutacja(List<List<Integer>> osobniki) {
+    static List<List<Integer>> mutacja(List<List<Integer>> v_osobniki) {
         List<List<Integer>> zmutowane = new ArrayList<>();
-        kopiuj_liste(osobniki, zmutowane);
+        kopiuj_liste(v_osobniki, zmutowane);
         double PM = 0.2;
         for (int i = 0; i < ileOsobnikow; i++) {
             for (int j = 0; j < ilePunktow - 1; j++) {
                 if (r.nextDouble() < PM) {
-                    zmutowane.get(i).set(j, zamien(osobniki.get(i).get(j), ilePunktow - j));
+                    zmutowane.get(i).set(j, zamien(v_osobniki.get(i).get(j), ilePunktow - j));
                 }
             }
         }
         return zmutowane;
     }
 
-    // Reprezentacja osobnika w postaci [[geny osobnika] dlugosc trasy]
-    static void osobniki_dlugosci(Map<Double, List<Integer>> mapa, List<List<Integer>> osobniki, double[] dlugosci_tras) {
-        for (int i = 0; i < osobniki.size(); i++) {
-            for (int j = 0; j < ilePunktow; j++) {
-                mapa.put(dlugosci_tras[i], osobniki.get(i));
-            }
-        }
-    }
+//    // Reprezentacja osobnika w postaci [[geny osobnika] dlugosc trasy]
+//    static void osobniki_dlugosci(Map<Double, List<Integer>> mapa, List<List<Integer>> osobniki, double[] dlugosci_tras) {
+//        for (int i = 0; i < ileOsobnikow; i++) {
+//
+//            // (int j = 0; j < ilePunktow; j++) {
+//                mapa.put(dlugosci_tras[i], osobniki.get(i));
+//           // }
+//        }
+//
+//
+//    }
 
     // Selekcja zwraca osobniki po przejściu wybranej metody selekcji
-    static List<List<Integer>> selekcja(Map<Double, List<Integer>> mapa, double[] dlugosciTras) {
-//        double []posortowane = rankingowa(dlugosciTras);
-//        double[] posortowane = turniejowa(dlugosciTras);
-        double[] posortowane = ruletki(dlugosciTras);
+    static List<List<Integer>> selekcja(double[] dlugosciTras) {
+        double[] posortowane;
+
+        switch (rg1.getCheckedRadioButtonId()) {
+            case R.id.radioButton3:
+                posortowane = turniejowa(dlugosciTras);
+                break;
+            case R.id.radioButton2:
+                posortowane = rankingowa(dlugosciTras);
+                break;
+            case R.id.radioButton:
+                posortowane = ruletki(dlugosciTras);
+                break;
+            default:
+                posortowane = turniejowa(dlugosciTras);
+        }
+
         List<List<Integer>> po_selekcji = new ArrayList<>();
         for (int i = 0; i < ileOsobnikow; i++) {
-            po_selekcji.add(mapa.get(posortowane[i]));
+//            po_selekcji.add(mapa.get(posortowane[i]));
+            po_selekcji.add(znajdzOsobnika(posortowane[i]));
         }
         return po_selekcji;
+    }
+
+    static List<Integer> znajdzOsobnika(double d) {
+
+        ArrayList<Integer> temp = null;
+        for (Osobnik o : osobniki) {
+            if (d == o.dlugosc) temp = (ArrayList<Integer>) o.geny;
+        }
+        return temp;
     }
 
     // Metoda selekcji rankingowa

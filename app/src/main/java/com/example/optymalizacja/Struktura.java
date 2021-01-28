@@ -48,6 +48,19 @@ public class Struktura {
         }
     }
 
+    ArrayList<Punkt> generujTrase(List<Integer> osobnikpermutacja) {
+        ArrayList<Punkt> tempPunkty = (ArrayList<Punkt>) punkty.clone();
+        ArrayList<Punkt> wynik = new ArrayList<>();
+        int iter;
+        for (int i = 0; i < osobnikpermutacja.size(); i++) {
+            iter = osobnikpermutacja.get(i);
+            wynik.add(tempPunkty.get(iter));
+            tempPunkty.remove(iter);
+        }
+
+        return wynik;
+    }
+
     void generujTrasy() {
 
         trasa = new ArrayList<>();
