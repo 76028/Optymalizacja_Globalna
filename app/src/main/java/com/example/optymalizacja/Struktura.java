@@ -17,7 +17,7 @@ public class Struktura {
 
     public Struktura(int ileOsobikow, int ilePunktow) {
 
-        this.ileOsobnikow = ileOsobikow;
+        this.ileOsobnikow = ileOsobikow; // ilość osobników
         this.ilePunktow = ilePunktow; // Ilość punktów przez które przechodzi = Ilość genów osobnika
         r = new Random();
         generujPunkty();

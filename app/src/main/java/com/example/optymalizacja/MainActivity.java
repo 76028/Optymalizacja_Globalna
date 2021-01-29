@@ -63,10 +63,8 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(d);
             wynik += d.toString() + "\n";
         }
-//        Collections.sort(Arrays.asList(osobniki)); // sortowanie
-        min = permutacja(s);
+        min = 2;
         wynik = "Minimum: " + min + "\n\n" + wynik;
-
         tv_wynik.setText(wynik);
     }
 
@@ -108,20 +106,10 @@ public class MainActivity extends AppCompatActivity {
         List<List<Integer>> inwersja;
         List<List<Integer>> transpozycja;
         List<List<Integer>> krzyzowanie;
-        // Wyświetlenie współrzędnych punktów/miast po których będzie poruszał się komiwojażer
-        //System.out.println("\n----Punkty (Miasta)----");
-        s.wyswietlPunkty();
-        // Wyświetlenie populacji osobników wraz z ich trasami i długościami tras
-//        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
-//        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
-        //System.out.println("\n----Osobnik + długość trasy----");
-//        mapa.forEach((key, value) -> System.out.println(value + " " + key));
-        // Iteracja po epokach
         for (int i = 0; i < iloscEpok; i++) {
             System.out.println("\n-----EPOKA " + (i + 1) + "-----");
             poselkcji = selekcja(s.dlugosciTras);
             osobniki.clear();
-            //System.out.println("----PO SELEKCJI----");
             poselkcji.forEach(System.out::println);
             // Zastosowanie operatorów genetycznych na populacji po selekcji i wyświetlenie tych danych
             if (sw1.isChecked()) {
@@ -150,15 +138,6 @@ public class MainActivity extends AppCompatActivity {
                 default:
                     krzyzowanie = krzyzowanieRownomierne(poselkcji);
             }
-
-            //System.out.println("----Z MUTACJI----");
-            // mutacja.forEach(System.out::println);
-            // System.out.println("----Z INWERSJI----");
-            //  inwersja.forEach(System.out::println);
-            // System.out.println("----Z TRANSPOZYCJI----");
-            //transpozycja.forEach(System.out::println);
-            // System.out.println("----Z KRZYŻOWANIA----");
-            // krzyzowanie.forEach(System.out::println);
             // Dodanie do populacji do eliminacji tylko zmienionych w wyniku działania operatorów genetycznych osobników
             for (int j = 0; j < ileOsobnikow; j++) {
                 if (mutacja != null)
@@ -177,8 +156,7 @@ public class MainActivity extends AppCompatActivity {
                     wynikowa.add(krzyzowanie.get(j));
                 }
             }
-            // Wyświetlenie wszystkich osobników (populacja przed selekcją oraz osobniki zmienione w wyniku działania operatorów genetycznych) oraz ilość tych osobników
-            //  System.out.println("----WSZYSTKIE OSOBNIKI (" + osobniki.size() + ")----");
+            //  wszystkie osobniki (populacja przed selekcją oraz osobniki zmienione w wyniku działania operatorów genetycznych)
             s.osobniki = wynikowa;
             s.generujTrasy(wynikowa.size());
             s.dlugosciTras(wynikowa.size());
@@ -186,24 +164,10 @@ public class MainActivity extends AppCompatActivity {
                 osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
             }
             // 3 METODY USUWANIA OSOBNIKÓW
-//            TreeMap<Double, List<Integer>> mapa1;
             ArrayList<Double> dlugosciTras;
             switch (rg3.getCheckedRadioButtonId()) {
                 case R.id.radioButton11:
                     // ELITARNA
-                    // Wybranie początkowej liczby osobników z populacji do eliminacji
-                    // posortowanie mapy
-//                    mapa1 = new TreeMap<>(mapa);
-//                    //mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-//                    // wyodrębnienie odpowiedniej liczby osobników poprzez usunięcie niepotrzebnych
-//                    while (mapa1.size() != ileOsobnikow) mapa1.pollLastEntry();
-//                    //System.out.println("----OSOBNIKI PO USUNIĘCIU----");
-//                    //mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-//                    mapa.clear();
-//                    mapa = new LinkedHashMap(mapa1);
-//                    mapa1.clear();
-//                    wynikowa.clear();
-//                    mapa.forEach((key, value) -> osobniki.add(value));
                     Collections.sort(osobniki);
                     while(osobniki.size()!=ileOsobnikow) {
                         osobniki.remove(osobniki.size()-1);
@@ -222,9 +186,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.radioButton12:
                     // ZE SCISKIEM
-//                    mapa1 = new TreeMap<>(mapa);
-                    // mapa1.forEach((key, value) -> System.out.println(value + " " + key));
-                    // usunięcie podobnych osobników (o podobnej długości trasy)
                     int ile_podobnych;
                     double roznica = 0.001;
                     dlugosciTras = new ArrayList<Double>();
@@ -235,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
                         for (int x = 0; x < osobniki.size() - 1; x++) {
                             ile_podobnych = 0;
                             for (int y = x + 1; y < osobniki.size(); y++) {
-//                                System.out.println("Długość="+osobniki.size()+"x="+x+" y="+y);
                                 if (Math.abs(dlugosciTras.get(x) - dlugosciTras.get(y)) < roznica) {
                                     ile_podobnych += 1;
                                 }
@@ -246,8 +206,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         roznica += 0.001;
                     }
-                    //System.out.println("----OSOBNIKI PO USUNIĘCIU----");
-                    // mapa1.forEach((key, value) -> System.out.println(value + " " + key));
                     wynikowa.clear();
                     for (int x = 0; x < ileOsobnikow; x++) {
                         wynikowa.add((List<Integer>) osobniki.get(x).geny);
@@ -262,16 +220,9 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.radioButton13:
                     // LOSOWA
-//                    mapa.forEach((key, value) -> System.out.println(value + " " + key));
-//                    dlugosciTras = new ArrayList<Double>();
-//                    for (double d : s.dlugosciTras) dlugosciTras.add(d);
                     while (osobniki.size() != ileOsobnikow) {
                         osobniki.remove(r.nextInt(osobniki.size()));
                     }
-//                    System.out.println("----OSOBNIKI PO UNUNIĘCIU----");
-//                    mapa.forEach((key, value) -> System.out.println(value + " " + key));
-//                    wynikowa.clear();
-//                    mapa.forEach((key, value) -> osobniki.add(value));
                     wynikowa.clear();
                     for (int x = 0; x < ileOsobnikow; x++) {
                         wynikowa.add((List<Integer>) osobniki.get(x).geny);
@@ -286,7 +237,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
             // Czyszczenie zmiennych
-
             poselkcji.clear();
             if (mutacja != null)
                 mutacja.clear();
@@ -304,30 +254,11 @@ public class MainActivity extends AppCompatActivity {
         // Wyświetlenie współrzędnych punktów/miast po których będzie poruszał się komiwojażer
         System.out.println("\n----Punkty (Miasta)----");
         s.wyswietlPunkty();
-        // Wyświetlenie populacji osobników wraz z ich trasami i długościami tras
-//        Map<Double, List<Integer>> mapa = new LinkedHashMap<>();
-//        osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
-//        System.out.println("\n----Osobnik + długość trasy----");
-//        mapa.forEach((key, value) -> System.out.println(value + " " + key));
-        // Iteracja po epokach
-        // odpal mi emulator  nieee ?
         for (int i = 0; i < iloscEpok; i++) {
             // Zastosowanie selecji i kolejnych operatorów genetycznych na populacji
             System.out.println("\n\n-----EPOKA " + (i + 1) + "-----");
-//            System.out.println("----SELEKCJA----");
             s.osobniki = selekcja(s.dlugosciTras);
-//            s.wyswietlOsobniki();
-//            System.out.println("\n----MUTACJA----");
-
-//            s.wyswietlOsobniki();
-//            System.out.println("\n----INWERSJA----");
-
-//            s.wyswietlOsobniki();
-//            System.out.println("\n----TRANSPOZYCJA----");
-
-            // s.wyswietlOsobniki();
-            //  System.out.println("\n----KRZYŻOWANIE----");
-
+            // Zastosowanie odpowiednich operatorów genetycznych
             if (sw1.isChecked()) {
                 s.osobniki = mutacja(s.osobniki);
             }
@@ -347,10 +278,6 @@ public class MainActivity extends AppCompatActivity {
                 default:
                     s.osobniki = krzyzowanieWielopunktowe(s.osobniki);
             }
-
-
-            // s.osobniki = krzyzowanieWielopunktowe(s.osobniki);
-            // s.wyswietlOsobniki();
             // ocena
             s.generujTrasy();
             s.dlugosciTras();
@@ -358,11 +285,7 @@ public class MainActivity extends AppCompatActivity {
             for (int j = 0; j < ileOsobnikow; j++) {
                 osobniki.add(new Osobnik(s.dlugosciTras[j], s.osobniki.get(j)));
             }
-//            mapa.clear();
-//            osobniki_dlugosci(mapa, s.osobniki, s.dlugosciTras);
         }
-//        System.out.println("\n----PO SUKCESJI----");
-//        mapa.forEach((key, value) -> System.out.println(value + " " + key));
     }
 
     // Transpozyjc genów osobnika na podstawie prawdopodobieństwa
@@ -395,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
         return ztranspozycjonowane;
     }
 
+    // Funckja wyliczająca najmniejszą odległość ze wszystkich możliwych permutacji tras
     static double permutacja(Struktura s) {
         List<Integer> osobnikpermutacja = new ArrayList<>();
         int[] licznik = new int[ilePunktow];
@@ -406,7 +330,6 @@ public class MainActivity extends AppCompatActivity {
         int silnia = silnia(ilePunktow);
         for (int i = 0; i < silnia; i++) {
             for (int j = 0; j < ilePunktow; j++) {
-                //System.out.println("Licznik["+j+"] wartość="+wartosc[j]);
                 osobnikpermutacja.add(wartosc[j]);
                 licznik[j]++;
                 if (licznik[j] >= j) {
@@ -450,7 +373,6 @@ public class MainActivity extends AppCompatActivity {
                     a = r.nextInt(ileOsobnikow - 1);
                     b = r.nextInt(ileOsobnikow - 1);
                 }
-                // a=3 b=7
                 temp = new ArrayList<Integer>(osobniki.get(i).subList(a, b));
                 Collections.reverse(temp);
                 temp2 = new ArrayList<Integer>(temp);
@@ -462,7 +384,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // jeśli możliwa inwersja
                 if (flag) {
-                    // System.out.println("osobnik="+i+" a="+a+" b="+b);
                     for (int j = a; j < b; j++) {
                         zinwersowane.get(i).set(j, temp.remove(0));
                     }
@@ -507,18 +428,6 @@ public class MainActivity extends AppCompatActivity {
         return zmutowane;
     }
 
-//    // Reprezentacja osobnika w postaci [[geny osobnika] dlugosc trasy]
-//    static void osobniki_dlugosci(Map<Double, List<Integer>> mapa, List<List<Integer>> osobniki, double[] dlugosci_tras) {
-//        for (int i = 0; i < ileOsobnikow; i++) {
-//
-//            // (int j = 0; j < ilePunktow; j++) {
-//                mapa.put(dlugosci_tras[i], osobniki.get(i));
-//           // }
-//        }
-//
-//
-//    }
-
     // Selekcja zwraca osobniki po przejściu wybranej metody selekcji
     static List<List<Integer>> selekcja(double[] dlugosciTras) {
         double[] posortowane;
@@ -539,14 +448,12 @@ public class MainActivity extends AppCompatActivity {
 
         List<List<Integer>> po_selekcji = new ArrayList<>();
         for (int i = 0; i < ileOsobnikow; i++) {
-//            po_selekcji.add(mapa.get(posortowane[i]));
             po_selekcji.add(znajdzOsobnika(posortowane[i]));
         }
         return po_selekcji;
     }
-
+    // funkcja zwraca osobnika na podstawie odległości
     static List<Integer> znajdzOsobnika(double d) {
-
         ArrayList<Integer> temp = null;
         for (Osobnik o : osobniki) {
             if (d == o.dlugosc) temp = (ArrayList<Integer>) o.geny;
@@ -656,10 +563,8 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < ile; i++) {
             pary.add(wylosowane.remove(r.nextInt(wylosowane.size())));
         }
-        //System.out.println(pary);
         return pary;
     }
-
     // Krzyżowanie równomierne
     static List<List<Integer>> krzyzowanieRownomierne(List<List<Integer>> osobniki) {
         List<List<Integer>> pokrzyzowane = new ArrayList<>();
@@ -693,10 +598,8 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Integer> punkty = new ArrayList<>();
         List<List<Integer>> pokrzyzowane = new ArrayList<>();
         kopiuj_liste(osobniki, pokrzyzowane);
-
         // Lista indexy przechowuje indeksy wylosowanych par (1,3,4,5) gdzie 1,3 to 1 para a 4,5 kolejna itd.
         List<Integer> indexy = wybierzPary2();
-
         for (int i = 0; i < indexy.size(); i += 2) {
             // Losowanie punktow dla każdej pary o wylosowanych indexach
             ilosc = r.nextInt(ilePunktow - 1) + 1; //zakres [1, ilePunktow - 1]
