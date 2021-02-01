@@ -30,7 +30,16 @@ public class Struktura {
     private void generujPunkty() {
 
         punkty = new ArrayList<Punkt>();
-
+//        punkty.add(new Punkt(-2,8));
+//        punkty.add(new Punkt(-3,-4));
+//        punkty.add(new Punkt(10,2));
+//        punkty.add(new Punkt(-5,10));
+//        punkty.add(new Punkt(-9,10));
+//        punkty.add(new Punkt(-3,8));
+//        punkty.add(new Punkt(-4,-6));
+//        punkty.add(new Punkt(9,6));
+//        punkty.add(new Punkt(-3,-5));
+//        punkty.add(new Punkt(-4,-8));
         for (int i = 0; i < ilePunktow; i++)
             punkty.add(new Punkt(r.nextInt(21) - 10, r.nextInt(21) - 10));
     }

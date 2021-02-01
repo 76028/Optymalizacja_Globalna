@@ -16,6 +16,8 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.w3c.dom.ls.LSOutput;
+
 public class MainActivity extends AppCompatActivity {
 
     Button btn_start, btn_wynik;
@@ -58,13 +60,14 @@ public class MainActivity extends AppCompatActivity {
             osobniki.add(new Osobnik(s.dlugosciTras[i], s.osobniki.get(i)));
         }
         String wynik = "";
+        double srednia = 0;
         int i = 0;
         for (Osobnik d : osobniki) {
             System.out.println(d);
             wynik += d.toString() + "\n";
         }
-        min = 2;
-        wynik = "Minimum: " + min + "\n\n" + wynik;
+        //min = permutacja(s);
+        wynik = "Minimum: " + 2 + "\n\n" + wynik;
         tv_wynik.setText(wynik);
     }
 
@@ -89,10 +92,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String wynik = "";
+        double srednia = 0;
         for (Osobnik o : osobniki) {
             wynik += o.toString() + "\n";
+            srednia += o.dlugosc;
         }
-        wynik = "Minimum: " + min + "\n\n" + wynik;
+        srednia = srednia/osobniki.size();
+        wynik = "Minimum: " + 2 + "\n\n" +"Średnia z populacji: "+srednia+"\n"+ wynik;
         tv_wynik.setText(wynik);
     }
 
@@ -118,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
                 mutacja = null;
             }
             if (sw2.isChecked()) {
+                System.out.println("--------------------------------------------------");
+                System.out.println(Arrays.deepToString(new List[]{poselkcji}));
                 inwersja = inwersja(poselkcji);
             } else {
                 inwersja = null;
@@ -169,8 +177,8 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.radioButton11:
                     // ELITARNA
                     Collections.sort(osobniki);
-                    while(osobniki.size()!=ileOsobnikow) {
-                        osobniki.remove(osobniki.size()-1);
+                    while (osobniki.size() != ileOsobnikow) {
+                        osobniki.remove(osobniki.size() - 1);
                     }
                     wynikowa.clear();
                     for (int x = 0; x < ileOsobnikow; x++) {
@@ -299,10 +307,10 @@ public class MainActivity extends AppCompatActivity {
             // Działanie na osobniku zależnie od ustalonego prawdopodbieństwa transpozycji
             if (r.nextInt() < PT) {
                 // wylosowanie dwóch indeksów do podmiany
-                a = r.nextInt(ileOsobnikow);
-                b = r.nextInt(ileOsobnikow);
+                a = r.nextInt(ilePunktow);
+                b = r.nextInt(ilePunktow);
                 while (a == b) {
-                    b = r.nextInt(ileOsobnikow);
+                    b = r.nextInt(ilePunktow);
                 }
                 // pobranie z osobnika wartości genu na wylosowanym indeksie
                 x1 = osobniki.get(i).get(a);
@@ -355,9 +363,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Inwersja genów w osobniku na podstawie prawdopodobieństwa
-    static List<List<Integer>> inwersja(List<List<Integer>> osobniki) {
+    static List<List<Integer>> inwersja(List<List<Integer>> v_osobniki) {
         List<List<Integer>> zinwersowane = new ArrayList<>();
-        kopiuj_liste(osobniki, zinwersowane);
+        kopiuj_liste(v_osobniki, zinwersowane);
         List<Integer> temp;
         List<Integer> temp2;
 
@@ -367,13 +375,14 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < ileOsobnikow; i++) {
             flag = true;
             if (r.nextDouble() < PI) {
-                a = r.nextInt(ileOsobnikow - 1);
-                b = r.nextInt(ileOsobnikow - 1);
+                a = r.nextInt(ilePunktow - 1);
+                b = r.nextInt(ilePunktow - 1);
                 while (a >= b) {
-                    a = r.nextInt(ileOsobnikow - 1);
-                    b = r.nextInt(ileOsobnikow - 1);
+                    a = r.nextInt(ilePunktow - 1);
+                    b = r.nextInt(ilePunktow - 1);
                 }
-                temp = new ArrayList<Integer>(osobniki.get(i).subList(a, b));
+                temp = new ArrayList<Integer>(v_osobniki.get(i)
+                        .subList(a, b));
                 Collections.reverse(temp);
                 temp2 = new ArrayList<Integer>(temp);
                 // sprawdzenie czy inwersja jest możliwa
@@ -452,6 +461,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return po_selekcji;
     }
+
     // funkcja zwraca osobnika na podstawie odległości
     static List<Integer> znajdzOsobnika(double d) {
         ArrayList<Integer> temp = null;
@@ -565,6 +575,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return pary;
     }
+
     // Krzyżowanie równomierne
     static List<List<Integer>> krzyzowanieRownomierne(List<List<Integer>> osobniki) {
         List<List<Integer>> pokrzyzowane = new ArrayList<>();
@@ -622,7 +633,8 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
-                for (int k = punkty.get(j); k < punkty.get(j + 1); k++) {
+//                for (int k = punkty.get(j); k < punkty.get(j + 1); k++) {
+                for (int k = punkty.get(j); k < ilePunktow; k++) {
 
                     pokrzyzowane.get(indexy.get(i)).set(k, osobniki.get(indexy.get(i + 1)).get(k));
                     pokrzyzowane.get(indexy.get(i + 1)).set(k, osobniki.get(indexy.get(i)).get(k));
